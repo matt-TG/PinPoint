@@ -1,0 +1,12 @@
+{
+    
+    "env": {
+        
+        "DB_USER": "matt",
+        "DB_PASSWORD": "tig2020noSQL",
+        "DB_NAME": "mernx",
+        "GOOGLE_API_KEY": "AIzaSyCJ9zeEr7G1Wyr-y1Hur6bxLEDSLyHJR-4",
+        "JWT_KEY": "ProjectX_MP_2020"
+    }
+}
+

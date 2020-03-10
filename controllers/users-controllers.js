@@ -10,18 +10,9 @@ const {validationResult}=require('express-validator');
 
 const User=require('../models/user');
 
-//const DUMMY_USERS=[{ //no need after starting to use database
-//    
-//    id: 'u1',
-//    name: 'Matt',
-//    email: 'test@gmail.com',
-//    password: 'test'
-//}];
-
 
 const getUsers= async (req, res, next) =>{
-    
-//    res.json({users: DUMMY_USERS}); //not used with the database
+
     
     let users;
     
@@ -54,19 +45,6 @@ const signup=async (req, res, next) =>{
     const {name, email, password}=req.body;
     
     
-    //NOT USING WITH DATABASE
-    
-//    const hasUser=DUMMY_USERS.find(u=>u.email===email);
-//    
-//    if(hasUser){
-//        
-//        throw new HttpError('Could not create the user, email already exists.', 422); //errorcode 422 is for invalid user input
-//    }
-    
-    
-    //NOT USING WITH DATABASE ENDS
-    
-    
     let existingUser;
     
     try{
@@ -89,15 +67,6 @@ const signup=async (req, res, next) =>{
     }
     
     
-    
-//    const createdUser={ //not used with database
-//        
-//        id: uuid(),
-//        name,
-//        email,
-//        password
-//    }
-    
     let hashedPassword;
     
     try{
@@ -116,10 +85,24 @@ const signup=async (req, res, next) =>{
         
         name,
         email,
-        image: req.file.path, //this comes from Multer. req has file property when a file is attached to a request and the path property points to its relative path so in this case /uploads/images/{theFileNameOfTheImage}...images in our backend will be stored in this location... notice that we need to provide a full path in UserItem.js at frontend side in Avatar component for the imae to show in the app
-        password: hashedPassword, //you should not store non decrypted password to your database...that is why we hash our password here
-        places: [] //starting value for user created places when creating a new user
+        image: req.file.path,
+        password: hashedPassword,
+        places: [],
+        events: [],
+        comments: []
     });
+    
+    //WITH COMMENTS
+    
+//       const createdUser= new User({
+//        
+//        name,
+//        email,
+//        image: req.file.path, //this comes from Multer. req has file property when a file is attached to a request and the path property points to its relative path so in this case /uploads/images/{theFileNameOfTheImage}...images in our backend will be stored in this location... notice that we need to provide a full path in UserItem.js at frontend side in Avatar component for the imae to show in the app
+//        password: hashedPassword, //you should not store non decrypted password to your database...that is why we hash our password here
+//        places: [] //starting value for user created places when creating a new user
+//    });
+    
     
      try{
         
@@ -146,11 +129,6 @@ const signup=async (req, res, next) =>{
         return next(error);
     }
     
-    
-    
-//    DUMMY_USERS.push(createdUser);
-    
-//    res.status(201).json({user: createdUser.toObject({getters:true}) //changing this when we added hashed password and a token
                           
     res.status(201).json({userId: createdUser.id, email: createdUser.email, token: token, image: createdUser.image});
 
@@ -161,19 +139,7 @@ const signup=async (req, res, next) =>{
 const login=async (req, res, next) =>{
     
     const {email, password}=req.body;
-    
-    
-      //NOT USING WITH DATABASE
-    
-//    const identifiedUser=DUMMY_USERS.find(u=>u.email===email);
-//    
-//    if(!identifiedUser){
-//        
-//        throw new HttpError('Could not identify user, credentials seem to be wrong', 401);
-//    }
-    
-    
-      //NOT USING WITH DATABASE ENDS
+
     
     let existingUser;
     
@@ -187,13 +153,7 @@ const login=async (req, res, next) =>{
         
         return next(error);
     }
-    
-//    if(!existingUser || existingUser.password !== password){ //we hashed our password when we stored a user so we can't do this check anymore
-//        
-//        const error=new HttpError('Invalid credentials, could not log you in', 401);
-//        
-//        return next(error);
-//    }
+
     
     if(!existingUser){
         
@@ -202,7 +162,6 @@ const login=async (req, res, next) =>{
         return next(error);
     }
     
-    //ADDED DUE TO HASHED PASSWORD
     
     
     let isValidPassword=false;
@@ -243,10 +202,6 @@ const login=async (req, res, next) =>{
     
     res.status(201).json({userId: existingUser.id, email: existingUser.email, token: token, image: existingUser.image});
     
-    
-    //ADDED DUE TO HASHED PASSWORD ENDS
-    
-//    res.json({message: 'Logged in!', user: existingUser.toObject({getters:true})});
 }
 
 

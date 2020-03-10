@@ -80,12 +80,14 @@ const signup=async (req, res, next) =>{
         return next(error);
     }
     
+    const stringPath=String(req.file.path);
+    
     
     const createdUser= new User({
         
         name,
         email,
-        image: req.file.path,
+        image: stringPath,
         password: hashedPassword,
         places: [],
         events: [],

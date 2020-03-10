@@ -80,7 +80,7 @@ const signup=async (req, res, next) =>{
         return next(error);
     }
     
-    const stringPath=String(req.file.path);
+    const stringPath=String(req.file.path); //needed to do this or otherwise deployed app was giving "Unexpected token < in JSON at position 0" error...in localhost no such error appeared
     
     
     const createdUser= new User({

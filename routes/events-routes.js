@@ -21,9 +21,13 @@ router.get('/:eid', eventsControllers.getEventById);
 
 router.get('/user/:uid', eventsControllers.getEventsByUserId);
 
-router.get('/comment/:eid', eventsControllers.getCommentsByEventId);
+router.get('/comment/all', eventsControllers.getComments);
 
-router.get('/comment/one/:cid', eventsControllers.getCommentById);
+router.get('/comment/:eid', eventsControllers.getCommentsByEventId); //this is probably not needed anymore, because I can't fetch the matching comments in event.js (frontend) for rerendering reasons (see idea.txt in the MERNX project folder)
+
+router.get('/comment/one/:cid', eventsControllers.getCommentById); //this is used for updateComment.js
+
+
 
 
 router.use(checkAuth); //a Middleware for checking if token exists... those routes that comes after this route will be checked

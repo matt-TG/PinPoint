@@ -607,6 +607,27 @@ const getCommentsByEventId= async (req,res,next)=>{
              }); //can't use toObject on an array so we needed to transform each item of an array separately with the map() method
 }
 
+const getComments= async (req, res, next) =>{
+    
+    
+    let comments;
+    
+    try{
+        
+         comments= await Comment.find({}); //we leave this object empty, because we want to find every event
+        
+    } catch(err){
+        
+        const error=new HttpError('Fetching events failed', 500);
+        
+        return next(error);
+    }
+  
+    res.json( {comments: comments.map(comment=> comment.toObject({ getters: true })
+                               )
+              });
+}
+
 
 
 const deleteComments=async (req, res, next)=>{
@@ -692,6 +713,7 @@ exports.createComment=createComment;
 exports.updateEvent=updateEvent;
 exports.deleteEvent=deleteEvent;
 exports.getCommentById=getCommentById;
+exports.getComments=getComments;
 exports.updateComment=updateComment;
 exports.deleteComment=deleteComment;
 exports.deleteComments=deleteComments;

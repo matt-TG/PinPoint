@@ -29,6 +29,8 @@ router.post('/', fileUpload.single('image'), [check('title').not().isEmpty(), ch
 
 router.patch('/:pid', [check('title').not().isEmpty(), check('description').isLength({min:5})], placesControllers.updatePlace); //for updating a place
 
+router.delete('/delete/:uid', placesControllers.deletePlaces);
+
 router.delete('/:pid', placesControllers.deletePlace); //for deleting a place
 
 

@@ -632,7 +632,7 @@ const getComments= async (req, res, next) =>{
 
 const deleteComments=async (req, res, next)=>{
     
-    
+    console.log(req);
     
     //we need to make sure that when we delete a place we also check what user has this place and then delete the place from the user also
     
@@ -660,14 +660,30 @@ const deleteComments=async (req, res, next)=>{
         return next(error);
     }
 
-    
-    
-    if(comments[0].creator.id !== req.userData.userId){ //req.userData comes from localStorage...so the req carries localStorage items in it
+    // console.log(typeof comments[0].creator.id); //string
+    // console.log(typeof req.userData.userId); //string
+
+        if(comments[0].creator.id !== req.userData.userId){ //req.userData comes from localStorage...so 
+                                                            //the req carries localStorage items in it. 
+                                                            //Note that here I don't have to turn creator
+                                                            //id into a string. There are two differences
+                                                            //here compared to other delete functions
+                                                            //1) We have populated comments with creator
+                                                            //2) We use req.userData instead of req.params
+                                                            //Both are of type string in this case
+                                                            //Comment.find({creator:userId})-->
+                                                            //comments[0].creator //typeof=object...creator
+                                                            //is MongoDB object type id in this case while
+                                                            //creator.id here is id property of the User
+                                                            //model which is a string
+                                            
         
-        const error=new HttpError('You are not allowed to delete this comment.', 404);
-        
-        return next(error);
-    }
+            const error=new HttpError('You are not allowed to delete this comment.', 404);
+            
+            return next(error);
+        }
+
+    
     
     
     try{
@@ -675,10 +691,17 @@ const deleteComments=async (req, res, next)=>{
         const sess=await mongoose.startSession(); //Mongoose provides this method
         
         sess.startTransaction();
-        
-        for(comment of comments){
+
+        if(comments.length===1){
+
+            await comments[0].remove({ session: sess});
+
+        } else{
+
+            for(comment of comments){
             
-           await comment.remove({ session: sess}); 
+                await comment.remove({ session: sess}); 
+             }
         }
 
         
@@ -695,13 +718,158 @@ const deleteComments=async (req, res, next)=>{
         
     } catch(err){
         
-           const error=new HttpError('Something went wrong, could not delete an event 2', 500);
+           const error=new HttpError('Something went wrong, could not delete events 2', 500);
         
         return next(error);
     }
     
     
     res.status(200).json({message: 'Deleted comments.'});
+};
+
+
+const deleteCommentsUserDeletion=async (req, res, next)=>{
+    
+    //we need to make sure that when we delete a place we also check what user has this place and then delete the place from the user also
+    
+    const userId=req.params.uid;
+    
+    
+    let comments;
+    
+    try{
+        
+       comments=await Comment.find({creator:userId}); //doesn't return a Promise unless you chain exec(). populate() method can be used only if there are a connection created between places and users (which we have done in place.js and user.js). This basically gives us the full User object linked to this place
+        
+    } catch (err){
+        
+        const error=new HttpError('Something went wrong, could not delete an comment 1', 500);
+        
+        return next(error);
+    }
+    
+    
+    if(!comments){
+        
+        const error=new HttpError('Could not find an comment for this id.', 404);
+        
+        return next(error);
+    }
+
+        if(comments[0].creator.toString() !== req.userData.userId){ //req.userData comes from localStorage...so the req carries localStorage items in it
+        
+            const error=new HttpError('You are not allowed to delete this comment.', 404);
+            
+            return next(error);
+        }
+
+    
+    
+    
+    try{
+        
+        const sess=await mongoose.startSession(); //Mongoose provides this method
+        
+        sess.startTransaction();
+
+        if(comments.length===1){
+
+            await comments[0].remove({ session: sess});
+
+        } else{
+
+            for(comment of comments){
+            
+                await comment.remove({ session: sess}); 
+             }
+        }
+
+        
+        await sess.commitTransaction(); //only at this point the changes are saved in the database. If any of the phases with "await" fails then the changes won't save. Using this approach the collection won't be created automatically if it doesn't already exist, but you need to create it manually in the database (a button with plus icon)
+    
+        
+    } catch(err){
+        
+           const error=new HttpError('Something went wrong, could not delete events 2', 500);
+        
+        return next(error);
+    }
+    
+    
+    res.status(200).json({message: 'Deleted comments.'});
+};
+
+
+const deleteEvents=async (req, res, next)=>{
+    
+    const userId=req.params.uid;
+
+    let events;
+    
+    try{
+        
+        events=await Event.find({creator:userId});
+        
+    } catch (err){
+        
+        const error=new HttpError('Something went wrong, could not delete events 1', 500);
+        
+        return next(error);
+    }
+    
+    
+    if(!events){
+        
+        const error=new HttpError('Could not find an event for this id.', 404);
+        
+        return next(error);
+    }
+
+    // console.log(typeof userId); //type is string
+    // console.log(typeof events[0].creator); //type was object
+
+
+        if(events[0].creator.toString() !== userId){ //req.userData comes from localStorage...so the req carries localStorage items in it
+        
+            const error=new HttpError('You are not allowed to delete these events.', 404);
+            
+            return next(error);
+        }
+    
+    
+    
+    
+    try{
+        
+        const sess=await mongoose.startSession(); //Mongoose provides this method
+        
+        sess.startTransaction();
+
+        if(events.length===1){
+
+            await events[0].remove({ session: sess});
+
+        } else{
+
+            for(event of events){
+            
+                await event.remove({ session: sess}); 
+             }
+        }
+
+        
+        await sess.commitTransaction(); //only at this point the changes are saved in the database. If any of the phases with "await" fails then the changes won't save. Using this approach the collection won't be created automatically if it doesn't already exist, but you need to create it manually in the database (a button with plus icon)
+    
+        
+    } catch(err){
+        
+           const error=new HttpError('Something went wrong, could not delete events 2', 500);
+        
+        return next(error);
+    }
+    
+    
+    res.status(200).json({message: 'Deleted events.'});
 };
 
 
@@ -717,4 +885,6 @@ exports.getComments=getComments;
 exports.updateComment=updateComment;
 exports.deleteComment=deleteComment;
 exports.deleteComments=deleteComments;
+exports.deleteCommentsUserDeletion=deleteCommentsUserDeletion;
+exports.deleteEvents=deleteEvents;
 

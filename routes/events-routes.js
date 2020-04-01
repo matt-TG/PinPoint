@@ -41,11 +41,15 @@ router.patch('/:eid', [check('title').not().isEmpty(), check('description').isLe
 
 router.patch('/comment/:cid', [check('comment').not().isEmpty()], eventsControllers.updateComment);
 
-router.delete('/:eid', eventsControllers.deleteEvent); //for deleting a place
+router.delete('/delete/:uid', eventsControllers.deleteEvents);
+
+router.delete('/:eid', eventsControllers.deleteEvent); //for deleting an event
 
 router.delete('/comment/:cid', eventsControllers.deleteComment);
 
 router.delete('/comments/:eid', eventsControllers.deleteComments);
+
+router.delete('/comments/user/:uid', eventsControllers.deleteCommentsUserDeletion);
 
 
 module.exports=router;

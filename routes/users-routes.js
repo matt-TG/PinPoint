@@ -20,6 +20,8 @@ router.post('/signup', fileUpload.single('image'), [check('name').not().isEmpty(
 
 router.post('/login', usersControllers.login);
 
+router.delete('/delete/:uid', usersControllers.deleteUser);
+
 
 
 module.exports=router;

@@ -317,8 +317,78 @@ const deletePlace=async (req, res, next)=>{
 };
 
 
+const deletePlaces=async (req, res, next)=>{
+    
+    
+    const userId=req.params.uid;
+    
+    
+    let places;
+    
+    try{
+        
+        places=await Place.find({creator:userId});
+        
+    } catch (err){
+        
+        const error=new HttpError('Something went wrong, could not delete places 1', 500);
+        
+        return next(error);
+    }
+    
+    
+    if(!places){
+        
+        const error=new HttpError('Could not find a place for this id.', 404);
+        
+        return next(error);
+    }
+
+        if(places[0].creator.toString() !== userId){ //req.userData comes from localStorage...so the req carries localStorage items in it
+        
+            const error=new HttpError('You are not allowed to delete these places.', 404);
+            
+            return next(error);
+        }
+    
+    
+    
+    try{
+        
+        const sess=await mongoose.startSession(); //Mongoose provides this method
+        
+        sess.startTransaction();
+
+        if(places.length===1){
+
+            await places[0].remove({ session: sess});
+
+        } else{
+
+            for(place of places){
+            
+                await place.remove({ session: sess}); 
+             }
+        }
+
+        
+        await sess.commitTransaction(); //only at this point the changes are saved in the database. If any of the phases with "await" fails then the changes won't save. Using this approach the collection won't be created automatically if it doesn't already exist, but you need to create it manually in the database (a button with plus icon)
+    
+        
+    } catch(err){
+        
+           const error=new HttpError('Something went wrong, could not delete places 2', 500);
+        
+        return next(error);
+    }
+    
+    
+    res.status(200).json({message: 'Deleted places.'});
+};
+
 exports.getPlaceById=getPlaceById;
 exports.getPlacesByUserId=getPlacesByUserId;
 exports.createPlace=createPlace;exports.updatePlace=updatePlace;
 exports.deletePlace=deletePlace;
+exports.deletePlaces=deletePlaces;
 

@@ -10,6 +10,8 @@ const {validationResult}=require('express-validator');
 
 const User=require('../models/user');
 
+const mongoose=require('mongoose');
+
 
 const getUsers= async (req, res, next) =>{
 
@@ -206,7 +208,69 @@ const login=async (req, res, next) =>{
     
 }
 
+const deleteUser=async (req, res, next)=>{
+    
+    //we need to make sure that when we delete a place we also check what user has this place and then delete the place from the user also
+    
+    const userId=req.params.uid;
+    
+    
+    let user;
+    
+    try{
+        
+        user=await User.findById(userId);
+        
+    } catch (err){
+        
+        const error=new HttpError('Something went wrong, could not delete the user 1', 500);
+        
+        return next(error);
+    }
+    
+    
+    if(!user){
+        
+        const error=new HttpError('Could not find the user for this id.', 404);
+        
+        return next(error);
+    }
+
+    
+    
+    if(user.id !== userId){
+        
+        const error=new HttpError('You are not allowed to delete this user.', 404);
+        
+        return next(error);
+    }
+    
+    
+    try{
+        
+        const sess=await mongoose.startSession(); //Mongoose provides this method
+        
+        sess.startTransaction();
+        
+        await user.remove({ session: sess});
+
+        // await user.save({session: sess});
+        
+        await sess.commitTransaction(); //only at this point the changes are saved in the database. If any of the phases with "await" fails then the changes won't save. Using this approach the collection won't be created automatically if it doesn't already exist, but you need to create it manually in the database (a button with plus icon)
+        
+    } catch(err){
+        
+           const error=new HttpError('Something went wrong, could not delete the user 2', 500);
+        
+        return next(error);
+    }
+    
+    
+    res.status(200).json({message: 'Deleted the user.'});
+};
+
 
 exports.getUsers=getUsers;
 exports.signup=signup;
 exports.login=login;
+exports.deleteUser=deleteUser;

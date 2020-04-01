@@ -632,8 +632,6 @@ const getComments= async (req, res, next) =>{
 
 const deleteComments=async (req, res, next)=>{
     
-    console.log(req);
-    
     //we need to make sure that when we delete a place we also check what user has this place and then delete the place from the user also
     
     const eventId=req.params.eid;

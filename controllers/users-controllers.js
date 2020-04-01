@@ -82,19 +82,27 @@ const signup=async (req, res, next) =>{
         return next(error);
     }
     
-    const stringPath=String(req.file.path); //needed to do this or otherwise deployed app was giving "Unexpected token < in JSON at position 0" error...in localhost no such error appeared
+    // const stringPath=String(req.file.path); //needed to do this or otherwise deployed app was giving "Unexpected token < in JSON at position 0" error...in localhost no such error appeared
     
+    // const stringPath=req.file.path;
+
+    console.log(typeof stringPath);
     
     const createdUser= new User({
         
         name,
         email,
-        image: stringPath,
+        image: req.file.path,
         password: hashedPassword,
         places: [],
         events: [],
         comments: []
     });
+
+    console.log(createdUser);
+
+    console.log(createdUser.image);
+    console.log(typeof createdUser.image);
     
     //WITH COMMENTS
     
@@ -102,7 +110,7 @@ const signup=async (req, res, next) =>{
 //        
 //        name,
 //        email,
-//        image: req.file.path, //this comes from Multer. req has file property when a file is attached to a request and the path property points to its relative path so in this case /uploads/images/{theFileNameOfTheImage}...images in our backend will be stored in this location... notice that we need to provide a full path in UserItem.js at frontend side in Avatar component for the imae to show in the app
+//        image: req.file.path, //this comes from Multer. req has file property when a file is attached to a request and the path property points to its relative path so in this case /uploads/images/{theFileNameOfTheImage}...images in our backend will be stored in this location... notice that we need to provide a full path in UserItem.js at frontend side in Avatar component for the image to show in the app
 //        password: hashedPassword, //you should not store non decrypted password to your database...that is why we hash our password here
 //        places: [] //starting value for user created places when creating a new user
 //    });
